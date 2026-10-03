@@ -1,6 +1,8 @@
 import MainNews from "@/components/MainNews";
 import Marquee from "@/components/Marquee";
+import MostRead from "@/components/MostRead";
 import NewsCard from "@/components/NewsCard";
+
 
 export default async function Home() {
   const res = await fetch("https://news-api-v2.vercel.app/api/news/sections");
@@ -38,7 +40,10 @@ export default async function Home() {
         </div>
 
         {/* most read section */}
-        <div className="bg-green-500 height-10 col-span-1"></div>
+        <div className=" col-span-1">
+          <MostRead />
+          
+        </div>
       </div>
     </div>
   );
