@@ -11,22 +11,35 @@ interface News {
   link: string;
 }
 
-const getTimeAgo = (date: string | number) => {
-  const seconds = Math.floor(
-    (Date.now() - new Date(date).getTime()) / 1000
-  );
 
-  const toBanglaNumber = (number: number) =>
-    number.toString().replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[+digit]);
+const toBanglaNumber = (number?: number) =>
+  (number ?? 0)
+    .toString()
+    .replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[+digit]);
+
+const getTimeAgo = (date?: string | number) => {
+  // Date না থাকলে
+  if (!date) {
+    return "সময় পাওয়া যায়নি";
+  }
+
+  const time = new Date(date).getTime();
+
+  // Invalid date
+  if (Number.isNaN(time)) {
+    return "সময় পাওয়া যায়নি";
+  }
+
+  const seconds = Math.floor((Date.now() - time) / 1000);
 
   // Future date
   if (seconds < 0) {
     return "এইমাত্র";
   }
 
-  // Seconds
+  // Less than 1 minute
   if (seconds < 60) {
-    return `${toBanglaNumber(seconds)} সেকেন্ড আগে`;
+    return "এইমাত্র";
   }
 
   // Minutes
@@ -63,6 +76,8 @@ const getTimeAgo = (date: string | number) => {
   return `${toBanglaNumber(years)} বছর আগে`;
 };
 
+
+
 const MainNews = ({ news }: { news: News[] }) => {
   const firstNews = news[0];
   const otherNews = news.slice(1, 5)
@@ -85,7 +100,7 @@ const MainNews = ({ news }: { news: News[] }) => {
                 width={1000}
                 height={600}
                 alt={firstNews.title}
-                className="h-[230px] w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-[280px] md:h-[320px]"
+                className="h-[230px] w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-[280px] md:h-[320px]" 
               />
 
               {/* Gradient */}

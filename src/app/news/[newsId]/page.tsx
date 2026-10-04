@@ -72,6 +72,7 @@ const DetailsPage = async ({
   }
 );
 
+
 if (!res.ok) {
   return <div>খবর পাওয়া যায়নি</div>;
 }
@@ -83,6 +84,7 @@ if (!data) {
 }
 
   const news: News = data.data;
+  console.log(news);
 
   const publishedDate = new Date(news.lastPublished);
 
