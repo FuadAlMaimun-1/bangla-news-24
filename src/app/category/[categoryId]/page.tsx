@@ -3,7 +3,7 @@ import NewsCard from '@/components/NewsCard';
 interface News {
     id: string;
     title: string;
-    categoryId: string;
+    categoryId?: string;
     params: string;
     category: string;
     description: string;

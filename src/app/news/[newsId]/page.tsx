@@ -65,15 +65,22 @@ const DetailsPage = async ({
 }) => {
   const { newsId } = await params;
 
-  const res = await fetch(
-    `https://news-api-v2.vercel.app/api/article/${newsId}`
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch news");
+ const res = await fetch(
+  `https://news-api-v2.vercel.app/api/article/${newsId}`,
+  {
+    cache: "no-store",
   }
+);
 
-  const data = await res.json();
+if (!res.ok) {
+  return <div>খবর পাওয়া যায়নি</div>;
+}
+
+const data = await res.json();
+
+if (!data) {
+  return <div>খবর পাওয়া যায়নি</div>;
+}
 
   const news: News = data.data;
 

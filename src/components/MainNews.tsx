@@ -2,16 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface News {
-  id: string;
+  id?: number | string;
   title: string;
-  category: string;
+  categoryId?: string;
   description: string;
   imageUrl: string;
-  lastPublished: string;
+  lastPublished?: string | number;
   link: string;
 }
 
-const getTimeAgo = (date: string) => {
+const getTimeAgo = (date: string | number) => {
   const seconds = Math.floor(
     (Date.now() - new Date(date).getTime()) / 1000
   );
@@ -19,30 +19,54 @@ const getTimeAgo = (date: string) => {
   const toBanglaNumber = (number: number) =>
     number.toString().replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[+digit]);
 
+  // Future date
+  if (seconds < 0) {
+    return "এইমাত্র";
+  }
+
+  // Seconds
   if (seconds < 60) {
     return `${toBanglaNumber(seconds)} সেকেন্ড আগে`;
   }
 
+  // Minutes
   const minutes = Math.floor(seconds / 60);
 
   if (minutes < 60) {
     return `${toBanglaNumber(minutes)} মিনিট আগে`;
   }
 
+  // Hours
   const hours = Math.floor(minutes / 60);
 
   if (hours < 24) {
     return `${toBanglaNumber(hours)} ঘণ্টা আগে`;
   }
 
+  // Days
   const days = Math.floor(hours / 24);
 
-  return `${toBanglaNumber(days)} দিন আগে`;
+  if (days < 30) {
+    return `${toBanglaNumber(days)} দিন আগে`;
+  }
+
+  // Months
+  const months = Math.floor(days / 30);
+
+  if (months < 12) {
+    return `${toBanglaNumber(months)} মাস আগে`;
+  }
+
+  // Years
+  const years = Math.floor(months / 12);
+
+  return `${toBanglaNumber(years)} বছর আগে`;
 };
 
 const MainNews = ({ news }: { news: News[] }) => {
   const firstNews = news[0];
-  const otherNews = news.slice(1, 5);
+  const otherNews = news.slice(1, 5)
+  ;
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-5">
@@ -90,7 +114,7 @@ const MainNews = ({ news }: { news: News[] }) => {
 
               <div className="mt-4 border-t border-gray-100 pt-3">
                 <span className="text-xs font-medium text-gray-400">
-                  {getTimeAgo(firstNews.lastPublished)}
+                  {getTimeAgo(firstNews.lastPublished as string)}
                 </span>
               </div>
             </div>
@@ -132,10 +156,6 @@ const MainNews = ({ news }: { news: News[] }) => {
                   {/* Content */}
                   <div className="flex min-w-0 flex-1 flex-col justify-center">
 
-                    {/* Category */}
-                    <p className="mb-1 text-[11px] font-bold text-red-600">
-                      {item.category}
-                    </p>
 
                     {/* Title */}
                     <h3 className="line-clamp-2 text-sm font-bold leading-5 text-gray-900 transition-colors duration-300 group-hover:text-red-700">
@@ -144,7 +164,7 @@ const MainNews = ({ news }: { news: News[] }) => {
 
                     {/* Time */}
                     <span className="mt-1 text-[11px] text-gray-400">
-                      {getTimeAgo(item.lastPublished)}
+                      {getTimeAgo(item.lastPublished as string)}
                     </span>
                   </div>
                 </article>
