@@ -1,6 +1,7 @@
 import Image from "next/image";
 import NavLink from "./NavLink";
 import Link from "next/link";
+import UserInfo from "./UserInfo";
 
 const Header = () => {
   const data = new Date().toLocaleDateString("bn-BD", {
@@ -20,13 +21,8 @@ const Header = () => {
         </div>
       </Link>
 
-      <div className="absolute right-4 flex gap-2">
-        <button className="cursor-pointer">সাইন ইন</button>
-
-        <button className="btn bg-red-700 hover:bg-red-900 text-white">
-          সাইন আপ
-        </button>
-      </div>
+    <UserInfo />
+    
     </div>
 
     <div className="flex items-center justify-center p-4 mx-auto max-w-7xl relative">
