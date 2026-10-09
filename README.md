@@ -28,7 +28,7 @@
 
 ## 🌐 Live Website
 
-🔗 [Visit Bangla News 24](https://bangla-news-24.vercel.app/)
+🔗 [Visit Bangla News 24](https://bd-news-24.vercel.app/)
 
 > Replace the link above with your actual deployed website URL if it is different.
 
