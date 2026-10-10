@@ -17,7 +17,11 @@ export const auth = betterAuth({
     github: {
         clientId: process.env.GITHUB_CLIENT_ID as string,
         clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    }
+    },
+     facebook: { 
+            clientId: process.env.FACEBOOK_CLIENT_ID as string, 
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string, 
+        }, 
   },
   database: mongodbAdapter(db, {
     client,
