@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { headers } from "next/headers";
 
@@ -14,10 +13,9 @@ const NavLink = async () => {
   let nav: NewsCategory[] = [];
 
   try {
-    const res = await fetch(
-      "https://news-api-v2.vercel.app/api/categories",
-      { next: { revalidate: 3600 } }
-    );
+    const res = await fetch("https://news-api-v2.vercel.app/api/categories", {
+      next: { revalidate: 3600 },
+    });
 
     if (res.ok) {
       const data = await res.json();
@@ -46,10 +44,7 @@ const NavLink = async () => {
         aria-label="প্রধান নেভিগেশন"
         className="flex min-w-max items-center gap-1"
       >
-        <Link
-          href="/"
-          className={linkClass(pathname === "/")}
-        >
+        <Link href="/" className={linkClass(pathname === "/")}>
           হোম
         </Link>
 
@@ -58,11 +53,7 @@ const NavLink = async () => {
           const active = pathname === href;
 
           return (
-            <Link
-              key={item.slug}
-              href={href}
-              className={linkClass(active)}
-            >
+            <Link key={item.slug} href={href} className={linkClass(active)}>
               {item.title}
             </Link>
           );

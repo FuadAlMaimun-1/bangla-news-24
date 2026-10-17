@@ -35,30 +35,39 @@ interface News {
   category: string;
   description: string;
   imageUrl: string;
+  imageAlt?: string;
   lastPublished: string;
   link: string;
 }
 
 const NewsCard = ({ news }: { news: News }) => {
   return (
-    <Link href={`/news/${news.id}`}>
-      <div className="border border-gray-300">
-      <div>
+    <Link href={`/news/${news.id}`} className="group block h-full">
+      <article className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-red-200 group-hover:shadow-lg">
         {/* Image */}
-        <div className="relative overflow-hidden">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
           <Image
             src={news.imageUrl}
-            alt={news.title}
-            width={500}
-            height={300}
+            alt={news.imageAlt || news.title}
+            fill
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
+
+          {/* Gradient for depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          {/* Category Badge */}
+          {news.category && (
+            <span className="absolute left-3 top-3 rounded-full bg-red-700 px-3 py-1 text-xs font-bold text-white shadow-md">
+              {news.category}
+            </span>
+          )}
         </div>
 
-        <div className="p-5">
-          <p className="mb-2 text-sm font-semibold text-red-700">
-            {news.category}
-          </p>
-          <h2 className="line-clamp-2 text-lg font-bold leading-7 text-gray-900 transition-colors duration-300 group-hover:text-red-600">
+        {/* Content */}
+        <div className="p-4 sm:p-5">
+          <h2 className="line-clamp-2 text-base font-bold leading-7 text-gray-900 transition-colors duration-300 group-hover:text-red-700 sm:text-lg">
             {news.title}
           </h2>
 
@@ -66,15 +75,17 @@ const NewsCard = ({ news }: { news: News }) => {
             {news.description}
           </p>
 
-          <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
             <span className="text-xs text-gray-400">
-              {" "}
               {getTimeAgo(news.lastPublished)}
+            </span>
+
+            <span className="flex items-center gap-1 text-xs font-semibold text-red-700">
+              বিস্তারিত পড়ুন
             </span>
           </div>
         </div>
-      </div>
-    </div>
+      </article>
     </Link>
   );
 };

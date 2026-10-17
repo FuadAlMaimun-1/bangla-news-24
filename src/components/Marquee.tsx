@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import MarqueeText from "react-marquee-text";
 import "react-marquee-text/dist/styles.css";
@@ -14,7 +13,7 @@ const Marquee = async () => {
   try {
     const res = await fetch(
       "https://news-api-v2.vercel.app/api/news?limit=10",
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 } },
     );
 
     if (res.ok) {
@@ -80,4 +79,3 @@ const Marquee = async () => {
 };
 
 export default Marquee;
-
