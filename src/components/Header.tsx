@@ -12,7 +12,7 @@ const Header = () => {
   });
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-[0_1px_4px_rgba(15,23,42,0.06)]">
       {/* Top Header */}
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
         {/* Logo + Brand */}
@@ -26,7 +26,7 @@ const Header = () => {
               src="/logo.webp"
               alt="Bangla News 24 logo"
               fill
-              priority
+              preload
               sizes="48px"
               className="object-contain"
             />

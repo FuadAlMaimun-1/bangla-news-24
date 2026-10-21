@@ -1,7 +1,14 @@
 import MainNews from "@/components/MainNews";
 import MostRead from "@/components/MostRead";
 import NewsCard from "@/components/NewsCard";
-import { NEWS_API_BASE, type NewsSection } from "@/lib/news-api";
+import SectionHeading from "@/components/SectionHeading";
+import VideoSection from "@/components/VideoSection";
+import {
+  fetchVideoNews,
+  NEWS_API_BASE,
+  type NewsSection,
+  type VideoNewsItem,
+} from "@/lib/news-api";
 
 // Homepage section order (the menu in NavLink mirrors it): ক্রিকেট first;
 // জেলা then রস+আলো pinned to the very bottom; every other section keeps the
@@ -17,9 +24,7 @@ const sectionRank = (slug: string): number => {
   return 0; // ordinary sections keep their API order (stable sort)
 };
 
-export default async function Home() {
-  let sections: NewsSection[] = [];
-
+const fetchSections = async (): Promise<NewsSection[]> => {
   try {
     const res = await fetch(`${NEWS_API_BASE}/api/news/sections`, {
       next: { revalidate: 60 },
@@ -27,11 +32,19 @@ export default async function Home() {
 
     if (res.ok) {
       const data = await res.json();
-      sections = Array.isArray(data?.data) ? data.data : [];
+      return Array.isArray(data?.data) ? data.data : [];
     }
   } catch (error) {
     console.error("News sections fetch error:", error);
   }
+
+  return [];
+};
+
+export default async function Home() {
+  // Headlines and the video band are independent — fetch them together.
+  const [sections, videos]: [NewsSection[], VideoNewsItem[]] =
+    await Promise.all([fetchSections(), fetchVideoNews(6)]);
 
   // Apply the pinned order above (ক্রিকেট → others → জেলা → রস+আলো).
   const orderedSections = [...sections].sort(
@@ -48,10 +61,10 @@ export default async function Home() {
       null,
     );
 
-  const mainNews = mainSection?.stories.slice(0, 5) ?? [];
+  const mainNews = mainSection?.stories.slice(0, 6) ?? [];
 
-  // Remaining sections for the 3-column grid: ordinary ones need ≥3 stories,
-  // while the pinned sections (ক্রিকেট / জেলা / রস+আলো) are never dropped.
+  // Remaining sections for the grid: ordinary ones need ≥3 stories, while the
+  // pinned sections (ক্রিকেট / জেলা / রস+আলো) are never dropped.
   const candidates = orderedSections.filter(
     (section) =>
       section !== mainSection &&
@@ -73,28 +86,27 @@ export default async function Home() {
   ];
 
   return (
-    <main className="mx-auto mt-4 w-full max-w-7xl px-3 sm:px-5 lg:px-8">
-      {/* Responsive Main Layout */}
-      <div className="grid grid-cols-1 items-start gap-5 md:gap-6 lg:grid-cols-12">
+    <div className="mx-auto w-full max-w-7xl px-3 pb-12 pt-4 sm:px-5 sm:pt-6 sm:pb-16 lg:px-8">
+      {/* Lead story + latest list */}
+      <MainNews news={mainNews} />
 
-        {/* News Content */}
+      {/* Video news: thumbnails that open the inline player */}
+      <VideoSection videos={videos} />
+
+      {/* Section grids with the sticky "most read" rail */}
+      <div className="mt-6 grid grid-cols-1 items-start gap-5 sm:mt-9 lg:grid-cols-12 lg:gap-6">
         <div className="min-w-0 lg:col-span-8">
-          {/* Main News + Latest News */}
-          <MainNews news={mainNews} />
-
-          {/* Other News Sections */}
           {otherNews.length > 0 ? (
-            <div className="mt-5 grid min-w-0 gap-6 sm:mt-6">
+            <div className="grid min-w-0 gap-6">
               {otherNews.map((section) => (
-                <section
-                  key={section.slug}
-                  className="min-w-0"
-                >
-                  <h2 className="border-b-2 border-red-800 pb-2 text-lg font-bold text-gray-900 sm:text-xl">
-                    {section.section}
-                  </h2>
+                <section key={section.slug} className="min-w-0">
+                  <SectionHeading
+                    title={section.section}
+                    href={`/category/${section.slug}`}
+                    linkLabel="সব খবর"
+                  />
 
-                  <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-5">
+                  <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
                     {section.stories.slice(0, 6).map((news) => (
                       <NewsCard
                         key={news.id}
@@ -107,7 +119,7 @@ export default async function Home() {
             </div>
           ) : (
             !mainNews.length && (
-              <div className="mt-5 rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500 sm:mt-6">
+              <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
                 এই মুহূর্তে কোনো খবর পাওয়া যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।
               </div>
             )
@@ -115,11 +127,13 @@ export default async function Home() {
         </div>
 
         {/* Most Read Sidebar */}
-        <aside className="order-last min-w-0 w-full lg:sticky lg:top-4 lg:col-span-4 lg:order-none">
+        <aside
+          aria-label="সর্বাধিক পঠিত খবর"
+          className="order-last min-w-0 w-full lg:sticky lg:order-none lg:col-span-4 lg:top-36"
+        >
           <MostRead />
         </aside>
-
       </div>
-    </main>
+    </div>
   );
 }

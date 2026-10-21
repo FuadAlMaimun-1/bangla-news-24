@@ -1,42 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { resolveImageUrl, type NewsItem } from "@/lib/news-api";
+import { formatTimeAgo } from "@/lib/format";
 
-const toBanglaNumber = (number: number) =>
-  number.toString().replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[+digit]);
-
-const getTimeAgo = (date: string) => {
-  if (!date) return "সময় পাওয়া যায়নি";
-
-  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-
-  if (Number.isNaN(seconds) || seconds < 0) return "সময় পাওয়া যায়নি";
-
-  if (seconds < 60) {
-    return `${toBanglaNumber(seconds)} সেকেন্ড আগে`;
-  }
-
-  const minutes = Math.floor(seconds / 60);
-
-  if (minutes < 60) {
-    return `${toBanglaNumber(minutes)} মিনিট আগে`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `${toBanglaNumber(hours)} ঘণ্টা আগে`;
-  }
-
-  const days = Math.floor(hours / 24);
-
-  return `${toBanglaNumber(days)} দিন আগে`;
-};
-
+/** Story card used by the homepage grids and the category pages. */
 const NewsCard = ({ news }: { news: NewsItem }) => {
   return (
     <Link href={`/news/${news.id}`} className="group block h-full">
-      <article className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-red-200 group-hover:shadow-lg">
+      <article className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:border-red-200 group-hover:shadow-lg">
         {/* Image */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
           <Image
@@ -48,7 +20,10 @@ const NewsCard = ({ news }: { news: NewsItem }) => {
           />
 
           {/* Gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          />
 
           {/* Category Badge */}
           {news.category && (
@@ -64,17 +39,24 @@ const NewsCard = ({ news }: { news: NewsItem }) => {
             {news.title}
           </h2>
 
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-500">
-            {news.description}
-          </p>
+          {news.description && (
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-500">
+              {news.description}
+            </p>
+          )}
 
-          <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
             <span className="text-xs text-gray-400">
-              {getTimeAgo(news.lastPublished)}
+              {formatTimeAgo(news.lastPublished)}
             </span>
 
-            <span className="flex items-center gap-1 text-xs font-semibold text-red-700">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-red-700">
               বিস্তারিত পড়ুন
+              <ArrowRight
+                size={13}
+                aria-hidden="true"
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              />
             </span>
           </div>
         </div>

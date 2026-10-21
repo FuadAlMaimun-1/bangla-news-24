@@ -12,7 +12,14 @@ export async function proxy(request: NextRequest) {
   const user = session?.user;
 
   if (!user) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    // Preserve the page the visitor wanted so sign-in can send them back
+    // after a successful login (sign-in reads `callbackURL`).
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set(
+      "callbackURL",
+      request.nextUrl.pathname + request.nextUrl.search,
+    );
+    return NextResponse.redirect(signInUrl);
   }
 }
 

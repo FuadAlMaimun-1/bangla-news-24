@@ -3,10 +3,12 @@
 import { useSession, signOut, updateUser } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 const UpdateProfilePage = () => {
+  const router = useRouter();
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
@@ -120,7 +122,6 @@ const UpdateProfilePage = () => {
   };
 
   const handleLogout = async () => {
-    signOut()
     try {
       const { error } = await signOut();
 
@@ -129,9 +130,9 @@ const UpdateProfilePage = () => {
         return;
       }
 
-      toast.success("You are successfully signed out!");
+      toast.success("সফলভাবে সাইন আউট হয়েছে!");
 
-      window.location.href = "/sign-in";
+      router.push("/sign-in");
     } catch {
       toast.error("সাইন আউট করতে সমস্যা হয়েছে");
     }

@@ -3,3 +3,18 @@
 @plugin "daisyui";
 @import "@heroui/styles"; 
 
+/* Swipeable video carousel on mobile: keep the cards scrollable but hide
+   the scrollbar, matching how news portals present horizontal strips. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Visible keyboard focus everywhere (buttons, cards, modal controls). */
+:focus-visible {
+  outline-offset: 2px;
+}

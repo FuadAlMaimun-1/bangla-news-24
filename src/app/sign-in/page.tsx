@@ -3,14 +3,33 @@ import { signIn } from "@/lib/auth-client";
 import { Eye, EyeSlash } from "@gravity-ui/icons";
 import { Button, InputGroup, Label, TextField } from "@heroui/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import { FaFacebook, FaFacebookF, FaGithub } from "react-icons/fa6";
+import { FaFacebookF, FaGithub } from "react-icons/fa6";
 import { FcGoogle } from "react-icons/fc";
 
 const SignInPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  // Where to land after auth. `proxy.ts` forwards protected pages here as
+  // ?callbackURL=/news/... — only same-origin paths are honoured so a crafted
+  // link can't bounce users to another site.
+  const resolveCallbackURL = () => {
+    const raw =
+      new URLSearchParams(window.location.search).get("callbackURL") ?? "/";
+
+    try {
+      const url = new URL(raw, window.location.origin);
+      return url.origin === window.location.origin
+        ? url.pathname + url.search
+        : "/";
+    } catch {
+      return "/";
+    }
+  };
 
   // Email and Password Sign In
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -33,7 +52,7 @@ const SignInPage = () => {
         email,
         password,
         rememberMe: true,
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -42,7 +61,11 @@ const SignInPage = () => {
       }
 
       if (data) {
-        toast.success("You are successfully logged in!");
+        toast.success("সফলভাবে সাইন ইন হয়েছে!");
+        // Better Auth does not navigate after an email sign-in — do it here,
+        // otherwise users are left staring at the form they just submitted.
+        router.push(resolveCallbackURL());
+        router.refresh();
       }
     } catch (error) {
       console.error("Email sign-in error:", error);
@@ -57,7 +80,7 @@ const SignInPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -74,7 +97,7 @@ const SignInPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "github",
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -91,7 +114,7 @@ const SignInPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "facebook",
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -125,7 +148,7 @@ const SignInPage = () => {
               id="email"
               name="email"
               type="email"
-              autoComplete="news-email"
+              autoComplete="email"
               placeholder="আপনার ইমেইল"
               className="input input-bordered w-full"
               required
@@ -140,7 +163,7 @@ const SignInPage = () => {
                   name="password"
                   type={isVisible ? "text" : "password"}
                   placeholder="আপনার পাসওয়ার্ড"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   className="w-full border-0 bg-transparent outline-none"
                   required
                 />
@@ -165,16 +188,6 @@ const SignInPage = () => {
               </InputGroup>
             </TextField>
 
-            {/* Forgot Password */}
-            <div className="text-right">
-              <Link
-                href="/forgot-password"
-                className="link link-primary text-sm"
-              >
-                পাসওয়ার্ড ভুলে গেছেন?
-              </Link>
-            </div>
-
             {/* Email Sign In */}
             <button
               type="submit"
@@ -186,7 +199,6 @@ const SignInPage = () => {
           </fieldset>
         </form>
 
-        {/* Social Sign In */}
         {/* Social Login */}
         <div className="mt-5 space-y-3">
           {/* Divider */}
@@ -222,7 +234,7 @@ const SignInPage = () => {
           <button
             type="button"
             onClick={handleFacebookSignIn}
-            className="group flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-base-300 bg-base-100 px-4 py-3 text-sm font-semibold text-base-content shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#1877F2]/50 hover:bg-[#1877F2]/5 hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2] focus-visible:ring-offset-2"
+            className="group flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-base-300 bg-base-100 px-4 py-3 text-sm font-semibold text-base-content shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#1877F2]/50 hover:bg-[#1877F2]/5 hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2]"
           >
             <FaFacebookF className="h-5 w-5 shrink-0 text-[#1877F2]" />
             <span>Continue with Facebook</span>

@@ -47,6 +47,8 @@ export interface NewsItem {
   category?: string | null;
   categorySlug?: string | null;
   author?: string | null;
+  /** Story type from the API: "text", "photo", "video", "shorts", "live", ... */
+  type?: string | null;
   firstPublished: string;
   lastPublished: string;
   source?: string | null;
@@ -64,4 +66,43 @@ export interface Category {
   slug: string;
   title: string;
   parentId: string | null;
+}
+
+/** Slug of the API's video category (`/api/category/video`). */
+export const VIDEO_CATEGORY_SLUG = "video";
+
+/**
+ * A video story from `/api/category/video`.
+ *
+ * `embedUrl` is *not* filled in by this fetch — the original article page is
+ * multi-megabyte, so the playable URL is resolved on demand instead: the
+ * card calls `GET /api/video/embed?link=...` when the reader presses play
+ * (see `src/lib/video-embed.ts`).
+ */
+export interface VideoNewsItem extends NewsItem {
+  embedUrl?: string | null;
+}
+
+/**
+ * Latest `limit` videos from `/api/category/video` (thumbnails + links only).
+ * Never throws: an upstream failure resolves to an empty list.
+ */
+export async function fetchVideoNews(limit = 6): Promise<VideoNewsItem[]> {
+  try {
+    const res = await fetch(`${NEWS_API_BASE}/api/category/${VIDEO_CATEGORY_SLUG}`, {
+      next: { revalidate: 300 },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Video list responded with ${res.status}`);
+    }
+
+    const data = await res.json();
+    const items: VideoNewsItem[] = Array.isArray(data?.data) ? data.data : [];
+
+    return items.filter((item) => item?.id && item?.link).slice(0, limit);
+  } catch (error) {
+    console.error("Video news fetch error:", error);
+    return [];
+  }
 }

@@ -15,6 +15,22 @@ const SignUpPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Where to land after auth (`proxy.ts` forwards protected pages here as
+  // ?callbackURL=/news/...). Only same-origin paths are honoured.
+  const resolveCallbackURL = () => {
+    const raw =
+      new URLSearchParams(window.location.search).get("callbackURL") ?? "/";
+
+    try {
+      const url = new URL(raw, window.location.origin);
+      return url.origin === window.location.origin
+        ? url.pathname + url.search
+        : "/";
+    } catch {
+      return "/";
+    }
+  };
+
   // Email Sign Up
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +60,7 @@ const SignUpPage = () => {
         email,
         password,
         ...(image ? { image } : {}),
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -54,8 +70,8 @@ const SignUpPage = () => {
       }
 
       if (data) {
-        toast.success("You are successfully registered!");
-        router.push("/");
+        toast.success("সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!");
+        router.push(resolveCallbackURL());
         router.refresh();
       }
     } catch (error) {
@@ -71,7 +87,7 @@ const SignUpPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -88,7 +104,7 @@ const SignUpPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "github",
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -105,7 +121,7 @@ const SignUpPage = () => {
     try {
       const { error } = await signIn.social({
         provider: "facebook",
-        callbackURL: "/",
+        callbackURL: resolveCallbackURL(),
       });
 
       if (error) {
@@ -215,7 +231,6 @@ const SignUpPage = () => {
           </fieldset>
 
           {/* Social Login */}
-          {/* Social Login */}
           <div className="mt-5 space-y-3">
             {/* Divider */}
             <div className="relative flex items-center py-2">
@@ -250,7 +265,7 @@ const SignUpPage = () => {
             <button
               type="button"
               onClick={handleFacebookSignIn}
-              className="group flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-base-300 bg-base-100 px-4 py-3 text-sm font-semibold text-base-content shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#1877F2]/50 hover:bg-[#1877F2]/5 hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2] focus-visible:ring-offset-2"
+              className="group flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-base-300 bg-base-100 px-4 py-3 text-sm font-semibold text-base-content shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#1877F2]/50 hover:bg-[#1877F2]/5 hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1877F2]"
             >
               <FaFacebookF className="h-5 w-5 shrink-0 text-[#1877F2]" />
               <span>Continue with Facebook</span>
