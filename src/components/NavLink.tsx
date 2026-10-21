@@ -8,7 +8,17 @@ const FALLBACK_TITLES: Record<string, string> = {
   economy: "অর্থনীতি",
   health: "সুস্থতা",
   environment: "পরিবেশ",
+  // Pinned into the menu below. fun exists in /api/categories data ("রস+আলো"),
+  // cricket and district don't, so their fallback titles actually get used.
+  cricket: "ক্রিকেট",
+  district: "জেলা",
+  fun: "রস+আলো",
 };
+
+// Menu order mirrors the homepage section order: ক্রিকেট first; জেলা then
+// রস+আলো at the end; the curated aliases keep their relative order between.
+const NAV_FIRST = ["cricket"];
+const NAV_LAST = ["district", "fun"];
 
 const NavLink = async () => {
   let items: { slug: string; title: string }[] = [];
@@ -31,10 +41,16 @@ const NavLink = async () => {
         ? data.aliases
         : [];
 
-      items = aliases.map((slug) => ({
-        slug,
-        title: titles.get(slug) ?? FALLBACK_TITLES[slug] ?? slug,
-      }));
+      // Pinned slugs first/last (see NAV_FIRST / NAV_LAST above); duplicates
+      // are dropped so an alias can never appear twice.
+      const pinned = new Set<string>([...NAV_FIRST, ...NAV_LAST]);
+
+      items = [...NAV_FIRST, ...aliases.filter((slug) => !pinned.has(slug)), ...NAV_LAST].map(
+        (slug) => ({
+          slug,
+          title: titles.get(slug) ?? FALLBACK_TITLES[slug] ?? slug,
+        }),
+      );
     }
   } catch (error) {
     console.error("Categories fetch error:", error);

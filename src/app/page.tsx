@@ -3,6 +3,20 @@ import MostRead from "@/components/MostRead";
 import NewsCard from "@/components/NewsCard";
 import { NEWS_API_BASE, type NewsSection } from "@/lib/news-api";
 
+// Homepage section order (the menu in NavLink mirrors it): ক্রিকেট first;
+// জেলা then রস+আলো pinned to the very bottom; every other section keeps the
+// relative order the API returns them in.
+const FIRST_SECTIONS = ["cricket"];
+const LAST_SECTIONS = ["district", "fun"]; // জেলা, রস+আলো
+
+const sectionRank = (slug: string): number => {
+  const firstIndex = FIRST_SECTIONS.indexOf(slug);
+  if (firstIndex !== -1) return -1000 + firstIndex; // pinned to the top
+  const lastIndex = LAST_SECTIONS.indexOf(slug);
+  if (lastIndex !== -1) return 1000 + lastIndex; // pinned to the bottom, in list order
+  return 0; // ordinary sections keep their API order (stable sort)
+};
+
 export default async function Home() {
   let sections: NewsSection[] = [];
 
@@ -19,19 +33,44 @@ export default async function Home() {
     console.error("News sections fetch error:", error);
   }
 
-  // The richest section (most stories) becomes the main news block.
-  const mainSection = sections.reduce<NewsSection | null>(
-    (best, section) =>
-      !best || section.stories.length > best.stories.length ? section : best,
-    null,
+  // Apply the pinned order above (ক্রিকেট → others → জেলা → রস+আলো).
+  const orderedSections = [...sections].sort(
+    (a, b) => sectionRank(a.slug) - sectionRank(b.slug),
   );
+
+  // The richest ordinary section becomes the main news block. Pinned sections
+  // never win it, so the pinned order stays deterministic on any day's data.
+  const mainSection = orderedSections
+    .filter((section) => sectionRank(section.slug) === 0)
+    .reduce<NewsSection | null>(
+      (best, section) =>
+        !best || section.stories.length > best.stories.length ? section : best,
+      null,
+    );
 
   const mainNews = mainSection?.stories.slice(0, 5) ?? [];
 
-  // Remaining sections with enough stories for the 3-column grid.
-  const otherNews = sections
-    .filter((section) => section !== mainSection && section.stories.length >= 3)
-    .slice(0, 6);
+  // Remaining sections for the 3-column grid: ordinary ones need ≥3 stories,
+  // while the pinned sections (ক্রিকেট / জেলা / রস+আলো) are never dropped.
+  const candidates = orderedSections.filter(
+    (section) =>
+      section !== mainSection &&
+      (section.stories.length >= 3 || sectionRank(section.slug) !== 0),
+  );
+
+  // The bottom pins reserve their slots up front so the 6-section cap can
+  // never cut জেলা or রস+আলো off the page.
+  const bottomPinned = candidates.filter((section) =>
+    LAST_SECTIONS.includes(section.slug),
+  );
+  const middle = candidates.filter(
+    (section) => !LAST_SECTIONS.includes(section.slug),
+  );
+
+  const otherNews = [
+    ...middle.slice(0, Math.max(0, 6 - bottomPinned.length)),
+    ...bottomPinned,
+  ];
 
   return (
     <main className="mx-auto mt-4 w-full max-w-7xl px-3 sm:px-5 lg:px-8">
