@@ -1,15 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
-interface News {
-  id?: number | string;
-  title: string;
-  categoryId?: string;
-  description: string;
-  imageUrl: string;
-  lastPublished?: string | number;
-  link: string;
-}
+import { resolveImageUrl, type NewsItem } from "@/lib/news-api";
 
 const toBanglaNumber = (number?: number) =>
   (number ?? 0)
@@ -54,7 +45,7 @@ const getTimeAgo = (date?: string | number) => {
   return `${toBanglaNumber(Math.floor(months / 12))} বছর আগে`;
 };
 
-const MainNews = ({ news }: { news: News[] }) => {
+const MainNews = ({ news }: { news: NewsItem[] }) => {
   const firstNews = news?.[0];
   const otherNews = news?.slice(1, 5) ?? [];
 
@@ -77,7 +68,7 @@ const MainNews = ({ news }: { news: News[] }) => {
           <article className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg sm:rounded-2xl">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100 sm:aspect-[16/9] lg:aspect-[4/3]">
               <Image
-                src={firstNews.imageUrl}
+                src={resolveImageUrl(firstNews.imageUrl)}
                 alt={firstNews.title}
                 fill
                 priority
@@ -133,9 +124,10 @@ const MainNews = ({ news }: { news: News[] }) => {
                 <article className="flex min-w-0 gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white p-2.5 transition-all duration-300 hover:border-red-200 hover:shadow-md sm:gap-3.5">
                   <div className="relative aspect-[4/3] w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100 sm:w-28 lg:w-24 xl:w-28">
                     <Image
-                      src={item.imageUrl}
+                      src={resolveImageUrl(item.imageUrl)}
                       alt={item.title}
-                      fill
+                      width={300}
+                      height={300}                    
                       sizes="(max-width: 639px) 96px, 112px"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />

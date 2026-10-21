@@ -1,37 +1,37 @@
 import MainNews from "@/components/MainNews";
 import MostRead from "@/components/MostRead";
 import NewsCard from "@/components/NewsCard";
-
-interface News {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  imageUrl: string;
-  lastPublished: string;
-  link: string;
-}
+import { NEWS_API_BASE, type NewsSection } from "@/lib/news-api";
 
 export default async function Home() {
-  const res = await fetch(
-    "https://news-api-v2.vercel.app/api/news/sections",
-    {
-      cache: "no-store",
-    }
-  );
+  let sections: NewsSection[] = [];
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch news");
+  try {
+    const res = await fetch(`${NEWS_API_BASE}/api/news/sections`, {
+      next: { revalidate: 60 },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      sections = Array.isArray(data?.data) ? data.data : [];
+    }
+  } catch (error) {
+    console.error("News sections fetch error:", error);
   }
 
-  const data = await res.json();
-  const sections = data.data;
+  // The richest section (most stories) becomes the main news block.
+  const mainSection = sections.reduce<NewsSection | null>(
+    (best, section) =>
+      !best || section.stories.length > best.stories.length ? section : best,
+    null,
+  );
 
-  const mainNews: News[] = sections?.[0]?.articles ?? [];
+  const mainNews = mainSection?.stories.slice(0, 5) ?? [];
 
-  const otherNews = [1, 3, 5, 6, 7, 8, 9]
-    .map((index) => sections?.[index])
-    .filter(Boolean);
+  // Remaining sections with enough stories for the 3-column grid.
+  const otherNews = sections
+    .filter((section) => section !== mainSection && section.stories.length >= 3)
+    .slice(0, 6);
 
   return (
     <main className="mx-auto mt-4 w-full max-w-7xl px-3 sm:px-5 lg:px-8">
@@ -44,27 +44,35 @@ export default async function Home() {
           <MainNews news={mainNews} />
 
           {/* Other News Sections */}
-          <div className="mt-5 grid min-w-0 gap-6 sm:mt-6">
-            {otherNews.map((section) => (
-              <section
-                key={section.curationId}
-                className="min-w-0"
-              >
-                <h2 className="border-b-2 border-red-800 pb-2 text-lg font-bold text-gray-900 sm:text-xl">
-                  {section.title}
-                </h2>
+          {otherNews.length > 0 ? (
+            <div className="mt-5 grid min-w-0 gap-6 sm:mt-6">
+              {otherNews.map((section) => (
+                <section
+                  key={section.slug}
+                  className="min-w-0"
+                >
+                  <h2 className="border-b-2 border-red-800 pb-2 text-lg font-bold text-gray-900 sm:text-xl">
+                    {section.section}
+                  </h2>
 
-                <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-5">
-                  {section.articles?.map((news: News) => (
-                    <NewsCard
-                      key={news.id}
-                      news={news}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
+                  <div className="mt-4 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 sm:gap-5">
+                    {section.stories.slice(0, 6).map((news) => (
+                      <NewsCard
+                        key={news.id}
+                        news={news}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : (
+            !mainNews.length && (
+              <div className="mt-5 rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500 sm:mt-6">
+                এই মুহূর্তে কোনো খবর পাওয়া যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।
+              </div>
+            )
+          )}
         </div>
 
         {/* Most Read Sidebar */}

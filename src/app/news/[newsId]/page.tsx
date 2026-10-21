@@ -11,18 +11,18 @@ import {
   Tag,
 } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
+import { NEWS_API_BASE, resolveImageUrl } from "@/lib/news-api";
 
 interface News {
   id: string;
   title: string;
   category?: string;
-  imageUrl: string;
-  imageAlt?: string;
+  imageUrl: string | null;
+  imageAlt?: string | null;
   lastPublished: string;
   firstPublished: string;
   link: string;
   source: string;
-  sourceUrl: string;
   text: string;
   tags: string[];
   wordCount: number;
@@ -73,8 +73,12 @@ const DetailsPage = async ({
   const { newsId } = await params;
 
   const res = await fetch(
-    `https://news-api-v2.vercel.app/api/article/${newsId}`,
+    `${NEWS_API_BASE}/api/article/${newsId}`,
   );
+
+  if (!res.ok) {
+    notFound();
+  }
 
   const data = await res.json();
 
@@ -104,7 +108,7 @@ const DetailsPage = async ({
           {/* Image */}
           <div className="relative h-[250px] w-full bg-gray-100 sm:h-[400px] lg:h-[500px]">
             <Image
-              src={news.imageUrl}
+              src={resolveImageUrl(news.imageUrl)}
               alt={news.imageAlt || news.title}
               fill
               priority
@@ -213,9 +217,9 @@ const DetailsPage = async ({
               </div>
 
               {/* Original Source */}
-              {news.sourceUrl && (
+              {news.link && (
                 <a
-                  href={news.sourceUrl}
+                  href={news.link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors duration-200 hover:text-red-700"

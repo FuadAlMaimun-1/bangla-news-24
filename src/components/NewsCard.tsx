@@ -1,12 +1,16 @@
-
 import Image from "next/image";
 import Link from "next/link";
+import { resolveImageUrl, type NewsItem } from "@/lib/news-api";
+
+const toBanglaNumber = (number: number) =>
+  number.toString().replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[+digit]);
 
 const getTimeAgo = (date: string) => {
+  if (!date) return "সময় পাওয়া যায়নি";
+
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
 
-  const toBanglaNumber = (number: number) =>
-    number.toString().replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[+digit]);
+  if (Number.isNaN(seconds) || seconds < 0) return "সময় পাওয়া যায়নি";
 
   if (seconds < 60) {
     return `${toBanglaNumber(seconds)} সেকেন্ড আগে`;
@@ -29,25 +33,14 @@ const getTimeAgo = (date: string) => {
   return `${toBanglaNumber(days)} দিন আগে`;
 };
 
-interface News {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  imageUrl: string;
-  imageAlt?: string;
-  lastPublished: string;
-  link: string;
-}
-
-const NewsCard = ({ news }: { news: News }) => {
+const NewsCard = ({ news }: { news: NewsItem }) => {
   return (
     <Link href={`/news/${news.id}`} className="group block h-full">
       <article className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-red-200 group-hover:shadow-lg">
         {/* Image */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
           <Image
-            src={news.imageUrl}
+            src={resolveImageUrl(news.imageUrl)}
             alt={news.imageAlt || news.title}
             fill
             sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"

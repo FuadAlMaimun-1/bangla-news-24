@@ -1,6 +1,7 @@
 import Link from "next/link";
 import MarqueeText from "react-marquee-text";
 import "react-marquee-text/dist/styles.css";
+import { NEWS_API_BASE } from "@/lib/news-api";
 
 interface NewsHeadline {
   title: string;
@@ -12,7 +13,7 @@ const Marquee = async () => {
 
   try {
     const res = await fetch(
-      "https://news-api-v2.vercel.app/api/news?limit=10",
+      `${NEWS_API_BASE}/api/news?limit=10`,
       { next: { revalidate: 60 } },
     );
 

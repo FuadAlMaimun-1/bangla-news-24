@@ -1,31 +1,44 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { NEWS_API_BASE } from "@/lib/news-api";
 
-interface NewsCategory {
-  slug: string;
-  title: string;
-  topicId: string | null;
-  url: string;
-  scrapable: boolean;
-}
+// Aliases are the site's curated main sections. A few of them don't appear in
+// /api/categories data, so their Bangla titles are listed here as fallback.
+const FALLBACK_TITLES: Record<string, string> = {
+  economy: "অর্থনীতি",
+  health: "সুস্থতা",
+  environment: "পরিবেশ",
+};
 
 const NavLink = async () => {
-  let nav: NewsCategory[] = [];
+  let items: { slug: string; title: string }[] = [];
 
   try {
-    const res = await fetch("https://news-api-v2.vercel.app/api/categories", {
+    const res = await fetch(`${NEWS_API_BASE}/api/categories`, {
       next: { revalidate: 3600 },
     });
 
     if (res.ok) {
       const data = await res.json();
-      nav = Array.isArray(data?.data) ? data.data : [];
+
+      const titles = new Map<string, string>(
+        (Array.isArray(data?.data) ? data.data : []).map(
+          (item: { slug: string; title: string }) => [item.slug, item.title],
+        ),
+      );
+
+      const aliases: string[] = Array.isArray(data?.aliases)
+        ? data.aliases
+        : [];
+
+      items = aliases.map((slug) => ({
+        slug,
+        title: titles.get(slug) ?? FALLBACK_TITLES[slug] ?? slug,
+      }));
     }
   } catch (error) {
     console.error("Categories fetch error:", error);
   }
-
-  const filterNav = nav.filter((item) => item.scrapable);
 
   // Current pathname, if supplied by middleware.
   const headerList = await headers();
@@ -48,7 +61,7 @@ const NavLink = async () => {
           হোম
         </Link>
 
-        {filterNav.map((item) => {
+        {items.map((item) => {
           const href = `/category/${item.slug}`;
           const active = pathname === href;
 

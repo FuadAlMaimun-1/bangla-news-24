@@ -12,7 +12,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Next.js 16.3.8 App Router news site (Bangla UI text), single package, deployed on Vercel. Source in `src/`; path alias `@/*` → `./src/*`.
 
-- All news content is fetched server-side from the external API `https://news-api-v2.vercel.app` (endpoints listed in `README.md`) inside async server components. There is no local news database; `json-server` in dependencies is an unused leftover — don't start it.
+- All news content is fetched server-side inside async server components from the external API `https://prothomalo-news-api.vercel.app` (base URL + shared response types in `src/lib/news-api.ts`) — there is no local news database, and no fetching happens client-side:
+  - `/api/news/sections` — homepage groups (`stories`, not `articles`; title field is `section`, group key is `slug`).
+  - `/api/news?limit=N` — ticker and most-read fallback (`data[]`).
+  - `/api/category/:slug` (singular!) — category pages; also accepts a Bengali title or numeric id. The plural `/api/categories/:id` route does not exist.
+  - `/api/article/:id` — article detail; exposes the original Prothom Alo URL as `link` (there is no `sourceUrl`), plus `text`, `body[]`, `tags`, `wordCount`.
+  - `/api/categories` — returns `data[]` plus an `aliases` array of the 13 curated main nav sections; three alias slugs (economy, health, environment) are missing from `data` and use fallback titles in `src/components/NavLink.tsx`.
+  - `/api/news/most-read` is documented but its upstream is intermittently broken (404) — `src/components/MostRead.tsx` falls back to `/api/news?limit=10`.
+- `json-server`, `cheerio`, and `rss-parser` in dependencies are unused leftovers — don't start or import them.
 - Auth is Better Auth: server config `src/lib/auth.ts`, client `src/lib/auth-client.ts` (`better-auth/react`), catch-all handler `src/app/api/auth/[...all]/route.ts`. MongoDB adapter, db name `bangla-news-24`; email/password + Google/GitHub/Facebook.
 - Route protection is `src/proxy.ts` — Next 16 renamed `middleware.ts` to `proxy.ts` and the export to `proxy`. Matcher covers `/profile` and `/news/:path`; unauthenticated users get redirected to `/sign-in`.
 - `CLAUDE.md` only imports this file — keep guidance here.
@@ -26,7 +33,7 @@ Next.js 16.3.8 App Router news site (Bangla UI text), single package, deployed o
 
 ## Environment
 
-Auth fails at runtime without `.env.local` (gitignored): `MONGODB_URL`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`, `FACEBOOK_CLIENT_ID`/`FACEBOOK_CLIENT_SECRET`, and `NEXT_PUBLIC_BETTER_AUTH_URL` (defaults to `http://localhost:3000`).
+Auth fails at runtime without env vars (`.env*` is gitignored; the repo owner's local `.env.local` carries them): `MONGODB_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_BETTER_AUTH_URL` (client falls back to `http://localhost:3000`), and `GOOGLE_*`/`GITHUB_*`/`FACEBOOK_*` `CLIENT_ID`/`CLIENT_SECRET` pairs for the three social providers.
 
 ## Toolchain quirks
 

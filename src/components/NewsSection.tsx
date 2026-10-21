@@ -1,20 +1,11 @@
 import MainNews from "./MainNews";
 import MostRead from "./MostRead";
-
-interface News {
-  id?: number | string;
-  title: string;
-  categoryId?: string;
-  description: string;
-  imageUrl: string;
-  lastPublished?: string | number;
-  link: string;
-}
+import type { NewsItem } from "@/lib/news-api";
 
 export default function NewsSection({
   news,
 }: {
-  news: News[];
+  news: NewsItem[];
 }) {
   return (
     <main className="mx-auto w-full max-w-7xl px-3 py-5 sm:px-5 lg:px-8">

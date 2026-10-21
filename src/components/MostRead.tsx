@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { NEWS_API_BASE } from "@/lib/news-api";
 
 interface News {
   id: string;
   title: string;
-  category: string;
-  description: string;
+  category?: string | null;
+  description?: string | null;
   imageUrl: string;
   lastPublished: string;
   link: string;
@@ -17,10 +18,19 @@ const MostRead = async () => {
   let news: News[] = [];
 
   try {
-    const res = await fetch(
-      "https://news-api-v2.vercel.app/api/news/most-read",
+    // most-read is documented but its upstream is intermittently down (404);
+    // fall back to the latest headlines so the sidebar is never empty.
+    let res = await fetch(
+      `${NEWS_API_BASE}/api/news/most-read`,
       { next: { revalidate: 300 } }
     );
+
+    if (!res.ok) {
+      res = await fetch(
+        `${NEWS_API_BASE}/api/news?limit=10`,
+        { next: { revalidate: 300 } }
+      );
+    }
 
     if (res.ok) {
       const data = await res.json();

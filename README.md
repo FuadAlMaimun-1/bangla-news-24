@@ -93,28 +93,6 @@ bangla-news-24/
 
 *Note: The structure above is illustrative. Adjust file names and folders to match your actual project.*
 
-## 📡 News API
-
-The application fetches news and category data from the following API endpoints:
-
-* News sections: `https://news-api-v2.vercel.app/api/news/sections`
-* News categories: `https://news-api-v2.vercel.app/api/categories`
-* Latest headlines: `https://news-api-v2.vercel.app/api/news?limit=10`
-* Most-read news: `https://news-api-v2.vercel.app/api/news/most-read`
-
-## 🚀 Deployment
-
-The project can be deployed on **Vercel**.
-
-1. Push your code to GitHub.
-2. Import the repository into Vercel.
-3. Configure the required environment variables.
-4. Deploy the application.
-
-## 🎯 Project Goal
-
-The goal of Bangla News 24 is to provide a simple, accessible, and user-friendly platform where readers can explore the latest news and popular stories in Bangla.
-
 ## 👨‍💻 Author
 
 Developed with ❤️ using Next.js and modern web technologies.
