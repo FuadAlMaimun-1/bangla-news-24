@@ -1,93 +1,135 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { NEWS_API_BASE } from "@/lib/news-api";
+import { House } from "lucide-react";
 
-// Aliases are the site's curated main sections. A few of them don't appear in
-// /api/categories data, so their Bangla titles are listed here as fallback.
 const FALLBACK_TITLES: Record<string, string> = {
   economy: "অর্থনীতি",
   health: "সুস্থতা",
   environment: "পরিবেশ",
-  // Pinned into the menu below. fun exists in /api/categories data ("রস+আলো"),
-  // cricket and district don't, so their fallback titles actually get used.
   cricket: "ক্রিকেট",
   district: "জেলা",
   fun: "রস+আলো",
 };
 
-// Menu order mirrors the homepage section order: ক্রিকেট first; জেলা then
-// রস+আলো at the end; the curated aliases keep their relative order between.
 const NAV_FIRST = ["cricket"];
 const NAV_LAST = ["district", "fun"];
 
+interface CategoryItem {
+  slug: string;
+  title: string;
+}
+
 const NavLink = async () => {
-  let items: { slug: string; title: string }[] = [];
+  let items: CategoryItem[] = [];
 
   try {
     const res = await fetch(`${NEWS_API_BASE}/api/categories`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 3000 },
     });
 
     if (res.ok) {
       const data = await res.json();
 
+      const categories: CategoryItem[] = Array.isArray(data?.data)
+        ? data.data
+        : [];
+
       const titles = new Map<string, string>(
-        (Array.isArray(data?.data) ? data.data : []).map(
-          (item: { slug: string; title: string }) => [item.slug, item.title],
-        ),
+        categories.map((item) => [item.slug, item.title]),
       );
 
       const aliases: string[] = Array.isArray(data?.aliases)
         ? data.aliases
         : [];
 
-      // Pinned slugs first/last (see NAV_FIRST / NAV_LAST above); duplicates
-      // are dropped so an alias can never appear twice.
-      const pinned = new Set<string>([...NAV_FIRST, ...NAV_LAST]);
+      const pinned = new Set<string>([
+        ...NAV_FIRST,
+        ...NAV_LAST,
+      ]);
 
-      items = [...NAV_FIRST, ...aliases.filter((slug) => !pinned.has(slug)), ...NAV_LAST].map(
-        (slug) => ({
-          slug,
-          title: titles.get(slug) ?? FALLBACK_TITLES[slug] ?? slug,
-        }),
-      );
+      const slugs = [
+        ...NAV_FIRST,
+        ...aliases.filter((slug) => !pinned.has(slug)),
+        ...NAV_LAST,
+      ];
+
+      items = [...new Set(slugs)].map((slug) => ({
+        slug,
+        title: titles.get(slug) ?? FALLBACK_TITLES[slug] ?? slug,
+      }));
     }
   } catch (error) {
     console.error("Categories fetch error:", error);
   }
 
-  // Current pathname, if supplied by middleware.
   const headerList = await headers();
   const pathname = headerList.get("x-pathname") ?? "";
 
   const linkClass = (active: boolean) =>
-    `relative shrink-0 whitespace-nowrap px-3 py-3 text-sm font-semibold transition-colors duration-200 sm:px-4 ${
+    `group relative inline-flex shrink-0 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium tracking-wide transition-all duration-300 ${
       active
-        ? "text-red-700 after:absolute after:inset-x-3 after:bottom-0 after:h-[3px] after:rounded-t-full after:bg-red-700 sm:after:inset-x-4"
-        : "text-gray-600 hover:text-red-700"
+        ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/20"
+        : "text-slate-600 hover:bg-slate-100/80 hover:text-red-600 active:scale-95"
     }`;
 
   return (
-    <div className="-mx-3 overflow-x-auto overscroll-x-contain px-3 sm:mx-0 sm:px-0">
-      <nav
-        aria-label="প্রধান নেভিগেশন"
-        className="flex min-w-max items-center gap-1"
-      >
-        <Link href="/" className={linkClass(pathname === "/")}>
-          হোম
-        </Link>
+    <div className="relative w-full border-y border-slate-200/60 bg-white/80 backdrop-blur-xl">
+      {/* Inner Container to align perfectly with the main site grid/header */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <nav
+          aria-label="প্রধান নেভিগেশন"
+          className="flex w-full items-center gap-1.5 overflow-x-auto scroll-smooth py-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {/* Home Link */}
+          <Link
+            href="/"
+            aria-current={pathname === "/" ? "page" : undefined}
+            className={linkClass(pathname === "/")}
+          >
+            <House
+              size={16}
+              strokeWidth={2.2}
+              className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105"
+            />
+            <span>হোম</span>
+          </Link>
 
-        {items.map((item) => {
-          const href = `/category/${item.slug}`;
-          const active = pathname === href;
+          {/* Divider */}
+          <span
+            aria-hidden="true"
+            className="mx-1 h-4 w-px shrink-0 bg-slate-200/80"
+          />
 
-          return (
-            <Link key={item.slug} href={href} className={linkClass(active)}>
-              {item.title}
-            </Link>
-          );
-        })}
-      </nav>
+          {/* Category Items */}
+          {items.map((item) => {
+            const href = `/category/${item.slug}`;
+            const active =
+              pathname === href || pathname.startsWith(`${href}/`);
+
+            return (
+              <Link
+                key={item.slug}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={linkClass(active)}
+              >
+                <span className="transition-transform duration-300 group-hover:-translate-y-0.5">
+                  {item.title}
+                </span>
+
+                {/* Active Dot Indicator */}
+                {active && (
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
 };

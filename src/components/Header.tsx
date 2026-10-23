@@ -1,7 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
 import NavLink from "./NavLink";
 import UserInfo from "./UserInfo";
+import ScrollToTopLink from "./ScrollToTopLink";
+import Image from "next/image";
 
 const Header = () => {
   const data = new Date().toLocaleDateString("bn-BD", {
@@ -16,11 +16,8 @@ const Header = () => {
       {/* Top Header */}
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
         {/* Logo + Brand */}
-        <Link
-          href="/"
-          aria-label="Bangla News 24 homepage"
-          className="flex min-w-0 items-center gap-2.5 sm:gap-3"
-        >
+
+        <ScrollToTopLink className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <div className="relative h-10 w-10 shrink-0 sm:h-12 sm:w-12">
             <Image
               src="/logo.webp"
@@ -41,7 +38,7 @@ const Header = () => {
               {data}
             </p>
           </div>
-        </Link>
+        </ScrollToTopLink>
 
         {/* User Account */}
         <div className="shrink-0">
@@ -51,9 +48,7 @@ const Header = () => {
 
       {/* Mobile Date */}
       <div className="border-t border-gray-100 px-3 py-2 sm:hidden">
-        <p className="text-[11px] font-medium text-gray-500">
-          {data}
-        </p>
+        <p className="text-[11px] font-medium text-gray-500">{data}</p>
       </div>
 
       {/* Navigation */}

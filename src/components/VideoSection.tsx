@@ -50,10 +50,7 @@ const VideoSection = ({ videos }: { videos: VideoNewsItem[] }) => {
   };
 
   return (
-    <section
-      aria-label="ভিডিও সংবাদ"
-      className="mt-6 min-w-0 sm:mt-9"
-    >
+    <section aria-label="ভিডিও সংবাদ" className="mt-6 min-w-0 sm:mt-9">
       {/* Tab bar */}
       <div className="flex items-center justify-between gap-3">
         <div
@@ -74,7 +71,12 @@ const VideoSection = ({ videos }: { videos: VideoNewsItem[] }) => {
                 : "border-transparent text-gray-500 hover:text-red-700"
             }`}
           >
-            <Play size={15} fill="currentColor" aria-hidden="true" className="text-red-700" />
+            <Play
+              size={15}
+              fill="currentColor"
+              aria-hidden="true"
+              className="text-red-700"
+            />
             ভিডিও
             <ChevronDown
               size={15}
@@ -141,19 +143,29 @@ const VideoSection = ({ videos }: { videos: VideoNewsItem[] }) => {
 
                       {/* Type chip */}
                       <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-red-700 px-2.5 py-1 text-[11px] font-bold text-white shadow-md">
-                        <Play size={11} fill="currentColor" aria-hidden="true" />
+                        <Play
+                          size={11}
+                          fill="currentColor"
+                          aria-hidden="true"
+                        />
                         ভিডিও
                       </span>
 
                       {/* Play button */}
+
+                      {/* Always visible Play button */}
                       <span
                         aria-hidden="true"
-                        className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-red-700 shadow-lg transition duration-300 group-hover/v:scale-110 group-hover/v:bg-red-700 group-hover/v:text-white"
+                        className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-700 text-white shadow-xl ring-4 ring-white/30 transition duration-300 group-hover/v:scale-110 group-hover/v:bg-red-600"
                       >
                         {isLoading ? (
-                          <span className="h-5 w-5 animate-spin rounded-full border-2 border-red-700 border-t-transparent" />
+                          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         ) : (
-                          <Play size={20} fill="currentColor" className="ml-0.5" />
+                          <Play
+                            size={24}
+                            fill="currentColor"
+                            className="ml-0.5"
+                          />
                         )}
                       </span>
                     </div>
